@@ -1,4 +1,4 @@
-package model;
+package model.Layanan;
 
 public interface LayananPengiriman {
     double hitungOngkir();

@@ -1,13 +1,15 @@
 package view;
 
 import controller.Manajemen;
-import model.Kurir;
-import model.Paket;
-import model.PaketExpress;
-import model.PaketReguler;
+import model.Pengguna.Kurir;
+import model.Paket.Paket;
+import model.Paket.PaketExpress;
+import model.Paket.PaketReguler;
+import model.Layanan.LayananPengiriman;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

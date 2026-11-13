@@ -1,7 +1,8 @@
-package view;
+
 
 import controller.Manajemen;
-import model.Paket;
+import model.Paket.Paket;
+
 import java.util.Scanner;
 
 public class MainApp {
