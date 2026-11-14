@@ -21,7 +21,8 @@ public class MainApp {
 
         if (hasilCari != null) {
             System.out.println("\n[INFO] Resi Ditemukan!");
-            System.out.println("-------------------------------------------------");
+            System.out.println("\n");
+            System.out.println("\n");
             System.out.println("No. Resi       : " + hasilCari.getNoResi());
             System.out.println("Pengirim       : " + hasilCari.getNamaPengirim());
             System.out.println("Penerima       : " + hasilCari.getNamaPenerima());
