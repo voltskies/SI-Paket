@@ -6,6 +6,8 @@ import model.Pengguna.PetugasGudang;
 import model.Pengguna.Kurir;
 import util.DatabaseConnection;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,10 +109,11 @@ public class PenggunaDAO {
         try {
             conn.setAutoCommit(false);
 
+            String hashedPassword = BCrypt.hashpw(pengguna.getPassword(), BCrypt.gensalt());
             try (PreparedStatement stmt = conn.prepareStatement(sqlPengguna, Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setString(1, pengguna.getNamaLengkap());
                 stmt.setString(2, pengguna.getEmail());
-                stmt.setString(3, pengguna.getPassword());
+                stmt.setString(3, hashedPassword);
                 stmt.setString(4, pengguna.getRole());
                 stmt.executeUpdate();
 
@@ -248,5 +251,30 @@ public class PenggunaDAO {
         p.setRole(role);
 
         return p;
+    }
+
+    public boolean verifyPassword(String email, String plainPassword) {
+        Connection conn = getConn();
+        if (conn == null) return false;
+
+        String sql = "SELECT password FROM pengguna WHERE email = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                String hashedPassword = rs.getString("password");
+                return BCrypt.checkpw(plainPassword, hashedPassword);
+            }
+        } catch (SQLException e) {
+            System.err.println("[PenggunaDAO] Error verifyPassword: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public Pengguna authenticate(String email, String plainPassword) {
+        if (verifyPassword(email, plainPassword)) {
+            return findByEmail(email);
+        }
+        return null;
     }
 }

@@ -24,4 +24,9 @@ Thumbs.db
 
 # Database
 *.sql
-!sipaket.sql
+
+# Environment files (contains secrets)
+.env
+.env.*
+
+LAPORAN_IMPLEMENTASI.md

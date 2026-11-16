@@ -78,10 +78,6 @@ public abstract class Pengguna {
         this.createdAt = createdAt;
     }
 
-    public boolean login(String inputEmail, String inputPassword) {
-        return this.email.equals(inputEmail) && this.password.equals(inputPassword);
-    }
-
     public void logout() {
     }
 
