@@ -1,17 +1,43 @@
 package model.Paket;
 
-public class PaketExpress extends Paket {
-    private double tarif_dasar_express;
-    private double biaya_prioritas;
+import model.Layanan.LayananPengiriman;
 
-    @Override
-    public double hitungBiaya() {
-        // Implementasi hitung biaya express
-        return (tarif_dasar_express * berat_kg) + biaya_prioritas;
+public class PaketExpress extends Paket {
+
+    public PaketExpress() {
+        super();
+        setJenisPaket("Express");
+        setTarifDasar(25000);
+        setBiayaPrioritas(15000);
+    }
+
+    public PaketExpress(String noResi, String namaPengirim, String namaPenerima,
+                        String alamatTujuan, double beratKg) {
+        this();
+        setNoResi(noResi);
+        setNamaPengirim(namaPengirim);
+        setNamaPenerima(namaPenerima);
+        setAlamatTujuan(alamatTujuan);
+        setBeratKg(beratKg);
+    }
+
+    public PaketExpress(String noResi, int idPengguna, String namaPengirim, String namaPenerima,
+                        String alamatAsal, String alamatTujuan, double beratKg) {
+        super(noResi, idPengguna, namaPengirim, namaPenerima, alamatAsal, alamatTujuan, beratKg, "Express", 25000, 15000);
     }
 
     @Override
-    public String getEstimasiWaktu() {
+    public double hitungOngkir() {
+        return (getTarifDasar() * getBeratKg()) + getBiayaPrioritas();
+    }
+
+    @Override
+    public String getEstimasiHari() {
         return "1-2 Hari Kerja";
+    }
+
+    @Override
+    public String getDetailLayanan() {
+        return "Express";
     }
 }

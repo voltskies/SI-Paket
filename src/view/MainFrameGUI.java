@@ -108,9 +108,9 @@ public class MainFrameGUI extends JFrame {
                     sb.append("Estimasi Tiba : ").append(paketDitemukanUser.getEstimasiHari()).append("\n");
                     sb.append("Total Ongkir  : Rp ").append(paketDitemukanUser.hitungOngkir()).append("\n");
                     sb.append("Pos Terkini   : ").append(paketDitemukanUser.getPosTerkini()).append("\n");
-                    sb.append("Status Terkini: ").append(paketDitemukanUser.getStatusPengiriman()).append("\n");
+                    sb.append("Status Terkini: ").append(paketDitemukanUser.getStatusTerkini()).append("\n");
                     if (paketDitemukanUser.getKurirPengantar() != null) {
-                        sb.append("Kurir Bertugas: ").append(paketDitemukanUser.getKurirPengantar().getNamaKurir()).append(" (" ).append(paketDitemukanUser.getKurirPengantar().getNoTelepon()).append(")\n");
+                        sb.append("Kurir Bertugas: ").append(paketDitemukanUser.getKurirPengantar().getNamaKurir()).append(" (" ).append(paketDitemukanUser.getKurirPengantar().getPlatKendaraan()).append(")\n");
                     }
                     sb.append("\nRIWAYAT PERJALANAN / TRACKING LOG:\n");
                     sb.append(paketDitemukanUser.getRiwayatTrackingLengkap());
@@ -348,7 +348,7 @@ public class MainFrameGUI extends JFrame {
                 String resi = (String) modelTabelAdmin.getValueAt(selectedRow, 0);
                 Paket p = manajemen.cariPaketByResi(resi);
                 if (p != null) {
-                    manajemen.getDaftarPaket().remove(p);
+                    manajemen.hapusPaket(resi);
                     JOptionPane.showMessageDialog(MainFrameGUI.this, "Paket berhasil dihapus.", "Sukses", JOptionPane.INFORMATION_MESSAGE);
                     refreshDataTabel();
                 }
@@ -368,7 +368,7 @@ public class MainFrameGUI extends JFrame {
                 p.getDetailLayanan(),
                 p.getBeratKg() + " Kg",
                 p.getPosTerkini(),
-                p.getStatusPengiriman()
+                p.getStatusTerkini()
             };
             modelTabelAdmin.addRow(row);
         }
@@ -377,17 +377,17 @@ public class MainFrameGUI extends JFrame {
         modelTabelKurir.setRowCount(0);
         Kurir kurirAktif = (Kurir) cmbKurirLogin.getSelectedItem();
         if (kurirAktif != null) {
-            for (Paket p : manajemen.getDaftarPaket()) {
-                if (p.getKurirPengantar() != null && p.getKurirPengantar().getIdKurir().equals(kurirAktif.getIdKurir())) {
-                    Object[] row = {
-                        p.getNoResi(),
-                        p.getNamaPenerima(),
-                        p.getAlamatTujuan(),
-                        p.getStatusPengiriman()
-                    };
-                    modelTabelKurir.addRow(row);
-                }
-            }
+                    for (Paket p : manajemen.getDaftarPaket()) {
+                        if (p.getKurirPengantar() != null && p.getKurirPengantar().getIdPengguna() == kurirAktif.getIdPengguna()) {
+                            Object[] row = {
+                                p.getNoResi(),
+                                p.getNamaPenerima(),
+                                p.getAlamatTujuan(),
+                                p.getStatusTerkini()
+                            };
+                            modelTabelKurir.addRow(row);
+                        }
+                    }
         }
     }
 

@@ -1,8 +1,41 @@
 package model.Pengguna;
 
 public class Kurir extends Pengguna {
-    private String plat_kendaraan;
-    private boolean status_ketersediaan;
+    private String platKendaraan;
+    private boolean statusKetersediaan;
+
+    public Kurir() {
+        super();
+        this.statusKetersediaan = true;
+    }
+
+    public Kurir(int idPengguna, String namaLengkap, String email, String password, String platKendaraan, boolean statusKetersediaan) {
+        super(idPengguna, namaLengkap, email, password, "Kurir");
+        this.platKendaraan = platKendaraan;
+        this.statusKetersediaan = statusKetersediaan;
+    }
+
+    public Kurir(String namaLengkap, String email, String password, String platKendaraan) {
+        super(namaLengkap, email, password, "Kurir");
+        this.platKendaraan = platKendaraan;
+        this.statusKetersediaan = true;
+    }
+
+    public String getPlatKendaraan() {
+        return platKendaraan;
+    }
+
+    public void setPlatKendaraan(String platKendaraan) {
+        this.platKendaraan = platKendaraan;
+    }
+
+    public boolean isStatusKetersediaan() {
+        return statusKetersediaan;
+    }
+
+    public void setStatusKetersediaan(boolean statusKetersediaan) {
+        this.statusKetersediaan = statusKetersediaan;
+    }
 
     @Override
     public String getAksesRole() {
@@ -10,23 +43,29 @@ public class Kurir extends Pengguna {
     }
 
     public void terimaTugas() {
-        // Implementasi terima tugas
     }
 
     public void updateLokasiTerkini() {
-        // Implementasi update lokasi
     }
 
-    public void selesaikanPengiriman(String no_resi) {
-        // Implementasi selesaikan pengiriman
+    public void selesaikanPengiriman(String noResi) {
     }
 
-    // ! Tambahan
-    public String getPlatKendaraan() {
-        return plat_kendaraan;
+    // Compat method
+    public Integer getIdKurir() {
+        return getIdPengguna();
     }
 
-    public boolean isStatusKetersediaan() {
-        return status_ketersediaan;
+    public String getNamaKurir() {
+        return getNamaLengkap();
+    }
+
+    public String getNoTelepon() {
+        return getPlatKendaraan();
+    }
+
+    @Override
+    public String toString() {
+        return getNamaLengkap() + " (" + (platKendaraan != null ? platKendaraan : "No Plat") + ")";
     }
 }

@@ -1,13 +1,12 @@
-
-
 import controller.Manajemen;
 import model.Paket.Paket;
+import model.Pengguna.Kurir;
 
 import java.util.Scanner;
 
 public class MainApp {
     public static void main(String[] args) {
-        Manajemen sistem = new Manajemen();
+        Manajemen sistem = Manajemen.getInstance();
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("SISTEM SI-PAKET");
@@ -30,13 +29,14 @@ public class MainApp {
             System.out.println("Berat          : " + hasilCari.getBeratKg() + " Kg");
             System.out.println("Jenis Layanan  : " + hasilCari.getDetailLayanan());
             System.out.println("Estimasi Tiba  : " + hasilCari.getEstimasiHari());
-            System.out.println("Total Ongkir   : Rp " + hasilCari.hitungOngkir());
+            System.out.println("Total Ongkir   : Rp " + String.format("%,.0f", hasilCari.hitungOngkir()));
             System.out.println("Pos Terkini    : " + hasilCari.getPosTerkini());
-            System.out.println("Status Paket   : " + hasilCari.getStatusPengiriman());
-            
-            if (hasilCari.getKurirPengantar() != null) {
-                System.out.println("Kurir Bertugas : " + hasilCari.getKurirPengantar().getNamaKurir() + 
-                                   " (" + hasilCari.getKurirPengantar().getNoTelepon() + ")");
+            System.out.println("Status Paket   : " + hasilCari.getStatusTerkini());
+
+            Kurir kurir = hasilCari.getKurirPengantar();
+            if (kurir != null) {
+                System.out.println("Kurir Bertugas : " + kurir.getNamaKurir() + 
+                                   " (" + kurir.getNoTelepon() + ")");
             }
 
             System.out.println("\nTRACKING LOG:");
@@ -48,7 +48,8 @@ public class MainApp {
                 String konfirmasi = scanner.nextLine();
                 if (konfirmasi.equalsIgnoreCase("y")) {
                     hasilCari.konfirmasiDiterimaUser();
-                    System.out.println("\n[SUKSES] Status paket sekarang: " + hasilCari.getStatusPengiriman());
+                    sistem.updateStatusPaket(hasilCari.getNoResi(), "Terkirim", 0, "Tujuan", "Paket dikonfirmasi diterima oleh penerima");
+                    System.out.println("\n[SUKSES] Status paket sekarang: " + hasilCari.getStatusTerkini());
                 }
             }
         } else {

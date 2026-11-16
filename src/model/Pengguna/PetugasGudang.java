@@ -1,7 +1,29 @@
 package model.Pengguna;
 
 public class PetugasGudang extends Pengguna {
-    private String lokasi_pos;
+    private String lokasiPos;
+
+    public PetugasGudang() {
+        super();
+    }
+
+    public PetugasGudang(int idPengguna, String namaLengkap, String email, String password, String lokasiPos) {
+        super(idPengguna, namaLengkap, email, password, "PetugasGudang");
+        this.lokasiPos = lokasiPos;
+    }
+
+    public PetugasGudang(String namaLengkap, String email, String password, String lokasiPos) {
+        super(namaLengkap, email, password, "PetugasGudang");
+        this.lokasiPos = lokasiPos;
+    }
+
+    public String getLokasiPos() {
+        return lokasiPos;
+    }
+
+    public void setLokasiPos(String lokasiPos) {
+        this.lokasiPos = lokasiPos;
+    }
 
     @Override
     public String getAksesRole() {
@@ -9,19 +31,16 @@ public class PetugasGudang extends Pengguna {
     }
 
     public void inputPaketBaru() {
-        // Implementasi input paket
     }
 
-    public void assignKurir(int id_kurir, String no_resi) {
-        // Implementasi assign kurir
+    public void assignKurir(int idKurir, String noResi) {
     }
 
-    public void konfirmasiTransit(String no_resi, String status) {
-        // Implementasi konfirmasi transit
+    public void konfirmasiTransit(String noResi, String status) {
     }
 
-    // ! Tambahan
-    public String getLokasiPos() {
-        return lokasi_pos;
+    @Override
+    public String toString() {
+        return "PetugasGudang{" + super.toString() + ", lokasiPos='" + lokasiPos + "'}";
     }
 }
