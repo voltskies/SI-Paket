@@ -28,6 +28,11 @@ public class GudangController implements HttpHandler {
         String path = exchange.getRequestURI().getPath();
 
         try {
+            if ("OPTIONS".equals(method)) {
+                setCorsHeaders(exchange);
+                exchange.sendResponseHeaders(204, -1);
+                return;
+            }
             if ("/api/gudang/paket".equals(path)) {
                 if ("GET".equals(method)) {
                     getAllPaket(exchange);

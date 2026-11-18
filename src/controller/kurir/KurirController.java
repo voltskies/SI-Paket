@@ -28,6 +28,11 @@ public class KurirController implements HttpHandler {
         String path = exchange.getRequestURI().getPath();
 
         try {
+            if ("OPTIONS".equals(method)) {
+                setCorsHeaders(exchange);
+                exchange.sendResponseHeaders(204, -1);
+                return;
+            }
             if ("/api/kurir".equals(path) && "GET".equals(method)) {
                 getKurirTersedia(exchange);
             } else if ("/api/kurir/tugas".equals(path) && "GET".equals(method)) {
