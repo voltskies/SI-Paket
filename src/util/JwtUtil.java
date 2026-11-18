@@ -2,7 +2,6 @@ package util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
 import java.security.Key;
@@ -19,12 +18,26 @@ public class JwtUtil {
 
     static {
         Properties env = new Properties();
+        
+        // 1. First priority: System environment variables (Render, production)
+        String jwtSecret = System.getenv("JWT_SECRET");
+        String jwtExp = System.getenv("JWT_EXPIRATION_MS");
+        
+        if (jwtSecret != null) env.setProperty("JWT_SECRET", jwtSecret);
+        if (jwtExp != null) env.setProperty("JWT_EXPIRATION_MS", jwtExp);
+        
+        // 2. Second priority: .env file (local development)
         try (InputStream input = Files.newInputStream(java.nio.file.Path.of(".env"))) {
-            env.load(input);
+            Properties fileProps = new Properties();
+            fileProps.load(input);
+            // Only set if not already set by system env
+            if (jwtSecret == null) env.setProperty("JWT_SECRET", fileProps.getProperty("JWT_SECRET", "default-secret-key-change-me-in-production"));
+            if (jwtExp == null) env.setProperty("JWT_EXPIRATION_MS", fileProps.getProperty("JWT_EXPIRATION_MS", "86400000"));
         } catch (Exception e) {
-            System.err.println("[JwtUtil] File .env tidak ditemukan, fallback ke secret default");
+            System.err.println("[JwtUtil] File .env tidak ditemukan, menggunakan system env: " + e.getMessage());
         }
-        String secret = env.getProperty("JWT_SECRET", "default-secret-key-change-me-in-production");
+        
+        String secret = env.getProperty("JWT_SECRET", "defaultSecretKey");
         JWT_SECRET = secret;
         JWT_EXPIRATION_MS = Long.parseLong(env.getProperty("JWT_EXPIRATION_MS", "86400000"));
         SECRET_KEY = Keys.hmacShaKeyFor(JWT_SECRET.getBytes());

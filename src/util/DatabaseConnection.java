@@ -49,11 +49,34 @@ public class DatabaseConnection {
 
     private Properties loadEnv() {
         Properties props = new Properties();
+        
+        // 1. First priority: System environment variables (Render, production)
+        String dbUrl = System.getenv("DB_URL");
+        String dbUser = System.getenv("DB_USER");
+        String dbPass = System.getenv("DB_PASSWORD");
+        String jwtSecret = System.getenv("JWT_SECRET");
+        String jwtExp = System.getenv("JWT_EXPIRATION_MS");
+        
+        if (dbUrl != null) props.setProperty("DB_URL", dbUrl);
+        if (dbUser != null) props.setProperty("DB_USER", dbUser);
+        if (dbPass != null) props.setProperty("DB_PASSWORD", dbPass);
+        if (jwtSecret != null) props.setProperty("JWT_SECRET", jwtSecret);
+        if (jwtExp != null) props.setProperty("JWT_EXPIRATION_MS", jwtExp);
+        
+        // 2. Second priority: .env file (local development)
         try (InputStream input = Files.newInputStream(Paths.get(".env"))) {
-            props.load(input);
+            Properties fileProps = new Properties();
+            fileProps.load(input);
+            // Only set if not already set by system env
+            if (dbUrl == null) props.setProperty("DB_URL", fileProps.getProperty("DB_URL", "jdbc:mysql://localhost:3306/sipaket?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"));
+            if (dbUser == null) props.setProperty("DB_USER", fileProps.getProperty("DB_USER", "root"));
+            if (dbPass == null) props.setProperty("DB_PASSWORD", fileProps.getProperty("DB_PASSWORD", ""));
+            if (jwtSecret == null) props.setProperty("JWT_SECRET", fileProps.getProperty("JWT_SECRET", "default-secret-key-change-me-in-production"));
+            if (jwtExp == null) props.setProperty("JWT_EXPIRATION_MS", fileProps.getProperty("JWT_EXPIRATION_MS", "86400000"));
         } catch (IOException e) {
-            System.err.println("[Config] File .env tidak ditemukan, menggunakan default: " + e.getMessage());
+            System.err.println("[Config] File .env tidak ditemukan, menggunakan system env: " + e.getMessage());
         }
+        
         return props;
     }
 
