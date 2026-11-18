@@ -20,20 +20,29 @@ public class DatabaseConnection {
 
     private DatabaseConnection() {
         Properties env = loadEnv();
-        this.url = env.getProperty("DB_URL", "jdbc:mysql://localhost:3306/sipaket?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true");
+        String dbUrl = env.getProperty("DB_URL", "jdbc:mysql://localhost:3306/sipaket?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true");
         this.user = env.getProperty("DB_USER", "root");
         this.password = env.getProperty("DB_PASSWORD", "");
+
+        // Auto-detect TiDB and add required SSL parameters
+        if (dbUrl.contains("tidbcloud") || dbUrl.contains("tiDB") || dbUrl.contains("TiDB")) {
+            if (!dbUrl.contains("useSSL") && !dbUrl.contains("useSsl")) {
+                dbUrl += (dbUrl.contains("?") ? "&" : "?") + "useSSL=true&requireSSL=true&verifyServerCertificate=false";
+            }
+        }
+        this.url = dbUrl;
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             this.connection = DriverManager.getConnection(url, user, password);
             this.connected = true;
-            System.out.println("[Database] Koneksi ke MySQL berhasil!");
+            System.out.println("[Database] Koneksi ke Database berhasil! URL: " + url);
         } catch (ClassNotFoundException e) {
             System.err.println("[Database] Driver MySQL tidak ditemukan: " + e.getMessage());
             this.connected = false;
         } catch (SQLException e) {
-            System.err.println("[Database] Gagal koneksi ke MySQL: " + e.getMessage());
+            System.err.println("[Database] Gagal koneksi: " + e.getMessage());
+            e.printStackTrace();
             this.connected = false;
         }
     }

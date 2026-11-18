@@ -92,7 +92,8 @@ public class AuthController implements HttpHandler {
         }
 
         // Cek email sudah terdaftar
-        if (manajemen.login(req.getEmail(), req.getPassword()) != null) {
+        model.Pengguna.Pengguna existingUser = manajemen.findByEmail(req.getEmail());
+        if (existingUser != null) {
             sendResponse(exchange, 409, new ErrorResponse("Email sudah terdaftar", 409));
             return;
         }

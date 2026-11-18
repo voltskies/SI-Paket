@@ -48,6 +48,10 @@ public class Manajemen {
         return penggunaDAO.findById(id);
     }
 
+    public Pengguna findByEmail(String email) {
+        return penggunaDAO.findByEmail(email);
+    }
+
     public Pengguna findWithRole(int id) {
         return penggunaDAO.findWithRole(id);
     }
