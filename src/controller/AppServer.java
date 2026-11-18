@@ -102,7 +102,13 @@ public class AppServer {
     }
 
     public static void setCorsHeaders(com.sun.net.httpserver.HttpExchange exchange) {
-        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        String origin = exchange.getRequestHeaders().getFirst("Origin");
+        String allowedOrigin = "http://localhost:50927";
+        if (origin != null && origin.equals(allowedOrigin)) {
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", allowedOrigin);
+        } else {
+            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        }
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization");
         exchange.getResponseHeaders().add("Access-Control-Allow-Credentials", "true");
