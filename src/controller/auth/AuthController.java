@@ -100,22 +100,28 @@ public class AuthController implements HttpHandler {
 
         // Buat user object
         int idPengguna = -1;
-        if ("User".equals(role)) {
-            var user = new model.Pengguna.User(req.getNamaLengkap(), req.getEmail(), req.getPassword(), req.getNoTelp());
-            idPengguna = manajemen.register(user);
-        } else if ("PetugasGudang".equals(role)) {
-            var pg = new model.Pengguna.PetugasGudang(req.getNamaLengkap(), req.getEmail(), req.getPassword(), req.getLokasiPos());
-            idPengguna = manajemen.register(pg);
-        } else if ("Kurir".equals(role)) {
-            var kurir = new model.Pengguna.Kurir(req.getNamaLengkap(), req.getEmail(), req.getPassword(), req.getPlatKendaraan());
-            idPengguna = manajemen.register(kurir);
+        try {
+            if ("User".equals(role)) {
+                var user = new model.Pengguna.User(req.getNamaLengkap(), req.getEmail(), req.getPassword(), req.getNoTelp());
+                idPengguna = manajemen.register(user);
+            } else if ("PetugasGudang".equals(role)) {
+                var pg = new model.Pengguna.PetugasGudang(req.getNamaLengkap(), req.getEmail(), req.getPassword(), req.getLokasiPos());
+                idPengguna = manajemen.register(pg);
+            } else if ("Kurir".equals(role)) {
+                var kurir = new model.Pengguna.Kurir(req.getNamaLengkap(), req.getEmail(), req.getPassword(), req.getPlatKendaraan());
+                idPengguna = manajemen.register(kurir);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendResponse(exchange, 500, new ErrorResponse("Registrasi error: " + e.getMessage(), 500));
+            return;
         }
 
         if (idPengguna > 0) {
             String token = util.JwtUtil.generateToken(idPengguna, req.getEmail(), role);
             sendResponse(exchange, 201, new AuthResponse(true, "Registrasi berhasil", token, role, idPengguna, req.getNamaLengkap(), req.getEmail()));
         } else {
-            sendResponse(exchange, 500, new ErrorResponse("Gagal mendaftarkan pengguna", 500));
+            sendResponse(exchange, 500, new ErrorResponse("Gagal mendaftarkan pengguna (database error atau koneksi gagal)", 500));
         }
     }
 

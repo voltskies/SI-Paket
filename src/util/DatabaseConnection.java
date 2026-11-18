@@ -20,29 +20,59 @@ public class DatabaseConnection {
 
     private DatabaseConnection() {
         Properties env = loadEnv();
-        String dbUrl = env.getProperty("DB_URL", "jdbc:mysql://localhost:3306/sipaket?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true");
+        
+        // Build DB_URL from components if not provided
+        String dbUrl = env.getProperty("DB_URL");
+        if (dbUrl == null || dbUrl.isEmpty()) {
+            String host = env.getProperty("DB_HOST", "localhost");
+            String port = env.getProperty("DB_PORT", "3306");
+            String name = env.getProperty("DB_NAME", "sipaket");
+            dbUrl = "jdbc:mysql://" + host + ":" + port + "/" + name;
+        } else if (!dbUrl.startsWith("jdbc:")) {
+            // If URL provided but missing jdbc: prefix
+            dbUrl = "jdbc:" + dbUrl;
+        }
+        
         this.user = env.getProperty("DB_USER", "root");
         this.password = env.getProperty("DB_PASSWORD", "");
 
-        // Auto-detect TiDB and add required SSL parameters
-        if (dbUrl.contains("tidbcloud") || dbUrl.contains("tiDB") || dbUrl.contains("TiDB")) {
-            if (!dbUrl.contains("useSSL") && !dbUrl.contains("useSsl")) {
-                dbUrl += (dbUrl.contains("?") ? "&" : "?") + "useSSL=true&requireSSL=true&verifyServerCertificate=false";
-            }
+        // Build final URL with proper SSL parameters for TiDB Cloud
+        StringBuilder finalUrl = new StringBuilder(dbUrl);
+        boolean hasQuery = dbUrl.contains("?");
+        
+        // Check if it's TiDB Cloud
+        boolean isTiDB = dbUrl.contains("tidbcloud") || dbUrl.contains("tiDB") || dbUrl.contains("TiDB");
+        
+        if (!hasQuery) {
+            finalUrl.append("?");
+        } else {
+            finalUrl.append("&");
         }
-        this.url = dbUrl;
+        
+        if (isTiDB) {
+            // TiDB Cloud requires SSL
+            finalUrl.append("useSSL=true&requireSSL=true&verifyServerCertificate=true&enabledTLSProtocols=TLSv1.2,TLSv1.3");
+        } else {
+            // Local MySQL can use insecure
+            finalUrl.append("useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true");
+        }
+        
+        this.url = finalUrl.toString();
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            this.connection = DriverManager.getConnection(url, user, password);
+            java.util.Properties connProps = new java.util.Properties();
+            connProps.setProperty("user", user);
+            connProps.setProperty("password", password);
+            connProps.setProperty("connectTimeout", "10000");
+            connProps.setProperty("socketTimeout", "10000");
+            this.connection = DriverManager.getConnection(url, connProps);
             this.connected = true;
-            System.out.println("[Database] Koneksi ke Database berhasil! URL: " + url);
         } catch (ClassNotFoundException e) {
             System.err.println("[Database] Driver MySQL tidak ditemukan: " + e.getMessage());
             this.connected = false;
         } catch (SQLException e) {
             System.err.println("[Database] Gagal koneksi: " + e.getMessage());
-            e.printStackTrace();
             this.connected = false;
         }
     }
@@ -52,12 +82,18 @@ public class DatabaseConnection {
         
         // 1. First priority: System environment variables (Render, production)
         String dbUrl = System.getenv("DB_URL");
+        String dbHost = System.getenv("DB_HOST");
+        String dbPort = System.getenv("DB_PORT");
+        String dbName = System.getenv("DB_NAME");
         String dbUser = System.getenv("DB_USER");
         String dbPass = System.getenv("DB_PASSWORD");
         String jwtSecret = System.getenv("JWT_SECRET");
         String jwtExp = System.getenv("JWT_EXPIRATION_MS");
         
         if (dbUrl != null) props.setProperty("DB_URL", dbUrl);
+        if (dbHost != null) props.setProperty("DB_HOST", dbHost);
+        if (dbPort != null) props.setProperty("DB_PORT", dbPort);
+        if (dbName != null) props.setProperty("DB_NAME", dbName);
         if (dbUser != null) props.setProperty("DB_USER", dbUser);
         if (dbPass != null) props.setProperty("DB_PASSWORD", dbPass);
         if (jwtSecret != null) props.setProperty("JWT_SECRET", jwtSecret);
@@ -68,7 +104,10 @@ public class DatabaseConnection {
             Properties fileProps = new Properties();
             fileProps.load(input);
             // Only set if not already set by system env
-            if (dbUrl == null) props.setProperty("DB_URL", fileProps.getProperty("DB_URL", "jdbc:mysql://localhost:3306/sipaket?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"));
+            if (dbUrl == null) props.setProperty("DB_URL", fileProps.getProperty("DB_URL", ""));
+            if (dbHost == null) props.setProperty("DB_HOST", fileProps.getProperty("DB_HOST", "localhost"));
+            if (dbPort == null) props.setProperty("DB_PORT", fileProps.getProperty("DB_PORT", "3306"));
+            if (dbName == null) props.setProperty("DB_NAME", fileProps.getProperty("DB_NAME", "sipaket"));
             if (dbUser == null) props.setProperty("DB_USER", fileProps.getProperty("DB_USER", "root"));
             if (dbPass == null) props.setProperty("DB_PASSWORD", fileProps.getProperty("DB_PASSWORD", ""));
             if (jwtSecret == null) props.setProperty("JWT_SECRET", fileProps.getProperty("JWT_SECRET", "default-secret-key-change-me-in-production"));
