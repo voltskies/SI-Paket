@@ -6,6 +6,7 @@ import controller.paket.PaketController;
 import controller.gudang.GudangController;
 import controller.kurir.KurirController;
 import controller.tracking.TrackingController;
+import controller.docs.DocsController;
 import filter.AuthFilter;
 import util.JsonUtil;
 
@@ -51,6 +52,8 @@ public class AppServer {
         System.out.println("  PATCH  /api/kurir/paket/{no_resi}/selesai");
         System.out.println("  PATCH  /api/kurir/ketersediaan");
         System.out.println("  GET    /api/tracking/{no_resi}");
+        System.out.println("  GET    /docs (Swagger UI)");
+        System.out.println("  GET    /api-docs (OpenAPI JSON)");
     }
 
     private static void registerRoutes() {
@@ -83,6 +86,13 @@ public class AppServer {
         // Tracking
         TrackingController trackingController = new TrackingController();
         server.createContext("/api/tracking/", trackingController);
+
+        // Docs (Swagger UI & OpenAPI spec)
+        DocsController docsController = new DocsController();
+        server.createContext("/docs", docsController);
+        server.createContext("/docs/", docsController);
+        server.createContext("/api-docs", docsController);
+        server.createContext("/api-docs.json", docsController);
     }
 
     private static void handleDefault(com.sun.net.httpserver.HttpExchange exchange) throws IOException {
@@ -103,12 +113,15 @@ public class AppServer {
 
     public static void setCorsHeaders(com.sun.net.httpserver.HttpExchange exchange) {
         String origin = exchange.getRequestHeaders().getFirst("Origin");
-        String allowedOrigin = "http://localhost:50927";
-        if (origin != null && origin.equals(allowedOrigin)) {
-            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", allowedOrigin);
+        String allowedOrigin;
+        
+        if (origin != null && (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:"))) {
+            allowedOrigin = origin;  // Allow any localhost port
         } else {
-            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            allowedOrigin = "*";     // Fallback for other cases
         }
+        
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", allowedOrigin);
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization");
         exchange.getResponseHeaders().add("Access-Control-Allow-Credentials", "true");

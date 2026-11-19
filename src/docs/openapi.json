@@ -1,0 +1,729 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SI-Paket API",
+    "description": "Sistem Informasi Paket Ekspedisi - API Documentation",
+    "version": "1.0.0",
+    "contact": {
+      "name": "SI-Paket Team",
+      "email": "support@sipaket.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Development server"
+    },
+    {
+      "url": "https://si-paket.onrender.com",
+      "description": "Production server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "AuthRequest": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "format": "password" },
+          "role": { "type": "string", "enum": ["User", "PetugasGudang", "Kurir"] },
+          "namaLengkap": { "type": "string" },
+          "noTelp": { "type": "string" },
+          "lokasiPos": { "type": "string" },
+          "platKendaraan": { "type": "string" }
+        },
+        "required": ["email", "password", "role", "namaLengkap"]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" },
+          "token": { "type": "string" },
+          "role": { "type": "string" },
+          "userId": { "type": "integer" },
+          "namaLengkap": { "type": "string" },
+          "email": { "type": "string" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "default": false },
+          "message": { "type": "string" },
+          "status": { "type": "integer" }
+        }
+      },
+      "PaketRequest": {
+        "type": "object",
+        "properties": {
+          "namaPenerima": { "type": "string" },
+          "alamatAsal": { "type": "string" },
+          "alamatTujuan": { "type": "string" },
+          "beratKg": { "type": "number", "format": "float" },
+          "jenisPaket": { "type": "string", "enum": ["Reguler", "Express"] },
+          "idPengguna": { "type": "integer" },
+          "idKurir": { "type": "integer" },
+          "statusKetersediaan": { "type": "boolean" }
+        },
+        "required": ["namaPenerima", "alamatAsal", "alamatTujuan", "beratKg", "jenisPaket"]
+      },
+      "CekOngkirRequest": {
+        "type": "object",
+        "properties": {
+          "alamatAsal": { "type": "string" },
+          "alamatTujuan": { "type": "string" },
+          "beratKg": { "type": "number", "format": "float" },
+          "jenisPaket": { "type": "string", "enum": ["Reguler", "Express"] }
+        },
+        "required": ["beratKg", "jenisPaket"]
+      },
+      "CekOngkirResponse": {
+        "type": "object",
+        "properties": {
+          "tarifDasar": { "type": "number" },
+          "biayaPrioritas": { "type": "number" },
+          "totalBiaya": { "type": "number" },
+          "estimasiHari": { "type": "string" },
+          "detailLayanan": { "type": "string" }
+        }
+      },
+      "PaketResponse": {
+        "type": "object",
+        "properties": {
+          "noResi": { "type": "string" },
+          "idPengguna": { "type": "integer" },
+          "idKurir": { "type": "integer" },
+          "namaPengirim": { "type": "string" },
+          "namaPenerima": { "type": "string" },
+          "alamatAsal": { "type": "string" },
+          "alamatTujuan": { "type": "string" },
+          "beratKg": { "type": "number", "format": "float" },
+          "statusTerkini": { "type": "string" },
+          "jenisPaket": { "type": "string" },
+          "tarifDasar": { "type": "number" },
+          "biayaPrioritas": { "type": "number" },
+          "posTerkini": { "type": "string" },
+          "kurirPengantar": { "$ref": "#/components/schemas/KurirResponse" },
+          "riwayatPelacakan": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RiwayatResponse" }
+          }
+        }
+      },
+      "KurirResponse": {
+        "type": "object",
+        "properties": {
+          "idPengguna": { "type": "integer" },
+          "namaLengkap": { "type": "string" },
+          "email": { "type": "string" },
+          "platKendaraan": { "type": "string" },
+          "statusKetersediaan": { "type": "boolean" }
+        }
+      },
+      "RiwayatResponse": {
+        "type": "object",
+        "properties": {
+          "idRiwayat": { "type": "integer" },
+          "updatedBy": { "type": "integer" },
+          "deskripsiStatus": { "type": "string" },
+          "lokasiUpdate": { "type": "string" },
+          "waktuUpdate": { "type": "string" }
+        }
+      },
+      "TrackingResponse": {
+        "type": "object",
+        "properties": {
+          "noResi": { "type": "string" },
+          "namaPenerima": { "type": "string" },
+          "statusTerkini": { "type": "string" },
+          "posTerkini": { "type": "string" },
+          "estimasiHari": { "type": "string" },
+          "riwayat": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "waktuUpdate": { "type": "string" },
+                "lokasiUpdate": { "type": "string" },
+                "deskripsiStatus": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "UserProfileResponse": {
+        "type": "object",
+        "properties": {
+          "idPengguna": { "type": "integer" },
+          "namaLengkap": { "type": "string" },
+          "email": { "type": "string" },
+          "role": { "type": "string" },
+          "noTelp": { "type": "string" },
+          "lokasiPos": { "type": "string" },
+          "platKendaraan": { "type": "string" },
+          "statusKetersediaan": { "type": "boolean" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "summary": "Registrasi pengguna baru",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AuthRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registrasi berhasil",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Login pengguna",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "format": "password" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login berhasil",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "Logout pengguna (client-side token removal)",
+        "tags": ["Auth"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Logout berhasil",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/users/profile": {
+      "get": {
+        "summary": "Get profil pengguna yang login",
+        "tags": ["Auth"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Profil pengguna",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserProfileResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/kurir": {
+      "get": {
+        "summary": "Daftar kurir yang tersedia",
+        "tags": ["Kurir"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "tersedia", "in": "query", "schema": { "type": "boolean" }, "description": "Filter kurir yang tersedia" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar kurir",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/KurirResponse" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/paket/cek-ongkir": {
+      "post": {
+        "summary": "Cek ongkir simulasi",
+        "tags": ["Paket"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CekOngkirRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hasil cek ongkir",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CekOngkirResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/api/paket": {
+      "post": {
+        "summary": "Buat paket baru (User)",
+        "tags": ["Paket"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PaketRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Paket dibuat",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PaketResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "get": {
+        "summary": "Daftar paket pengguna yang login",
+        "tags": ["Paket"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" }, "description": "Filter status paket" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar paket",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/PaketResponse" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/paket/saya": {
+      "get": {
+        "summary": "Daftar paket milik pengguna (alias /api/paket GET)",
+        "tags": ["Paket"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar paket milik user",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/PaketResponse" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/paket/{noResi}": {
+      "get": {
+        "summary": "Detail paket by noResi",
+        "tags": ["Paket"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "noResi", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail paket",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PaketResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/gudang/paket": {
+      "get": {
+        "summary": "Daftar semua paket di gudang (PetugasGudang)",
+        "tags": ["Gudang"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "jenis_paket", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar paket di gudang",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/PaketResponse" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "summary": "Input paket baru di gudang (PetugasGudang)",
+        "tags": ["Gudang"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PaketRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Paket ditambahkan",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PaketResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/gudang/paket/{noResi}/transit": {
+      "patch": {
+        "summary": "Update status transit paket",
+        "tags": ["Gudang"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "noResi", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statusTerkini": { "type": "string" },
+                  "posTerkini": { "type": "string" },
+                  "deskripsi_status": { "type": "string" }
+                },
+                "required": ["statusTerkini", "posTerkini", "deskripsi_status"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Status transit diupdate", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaketResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/gudang/paket/{noResi}/assign-kurir": {
+      "patch": {
+        "summary": "Assign kurir ke paket",
+        "tags": ["Gudang"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "noResi", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "idKurir": { "type": "integer" }
+                },
+                "required": ["idKurir"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Kurir diassign", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaketResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/kurir/tugas": {
+      "get": {
+        "summary": "Daftar tugas kurir yang login",
+        "tags": ["Kurir"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar tugas",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/PaketResponse" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/kurir/paket/{noResi}/terima": {
+      "patch": {
+        "summary": "Kurir terima tugas",
+        "tags": ["Kurir"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "noResi", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "lokasi_update": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tugas diterima", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaketResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/kurir/paket/{noResi}/lokasi": {
+      "post": {
+        "summary": "Update lokasi kurir saat perjalanan",
+        "tags": ["Kurir"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "noResi", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "lokasi_update": { "type": "string" },
+                  "deskripsi_status": { "type": "string" }
+                },
+                "required": ["lokasi_update"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Lokasi diupdate", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaketResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/kurir/paket/{noResi}/selesai": {
+      "patch": {
+        "summary": "Selesaikan pengiriman",
+        "tags": ["Kurir"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "noResi", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "lokasi_update": { "type": "string" },
+                  "deskripsi_status": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Pengiriman selesai", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaketResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/kurir/ketersediaan": {
+      "patch": {
+        "summary": "Update status ketersediaan kurir",
+        "tags": ["Kurir"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status_ketersediaan": { "type": "boolean" }
+                },
+                "required": ["status_ketersediaan"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Status diupdate", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/KurirResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/tracking/{noResi}": {
+      "get": {
+        "summary": "Tracking paket by noResi (public)",
+        "tags": ["Tracking"],
+        "parameters": [
+          { "name": "noResi", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail tracking",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TrackingResponse" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    }
+  },
+  "responses": {
+    "BadRequest": {
+      "description": "Bad Request",
+      "content": {
+        "application/json": {
+          "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+        }
+      }
+    },
+    "Unauthorized": {
+      "description": "Unauthorized",
+      "content": {
+        "application/json": {
+          "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+        }
+      }
+    },
+    "Forbidden": {
+      "description": "Forbidden",
+      "content": {
+        "application/json": {
+          "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+        }
+      }
+    },
+    "NotFound": {
+      "description": "Not Found",
+      "content": {
+        "application/json": {
+          "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+        }
+      }
+    },
+    "Conflict": {
+      "description": "Conflict",
+      "content": {
+        "application/json": {
+          "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+        }
+      }
+    },
+    "InternalError": {
+      "description": "Internal Server Error",
+      "content": {
+        "application/json": {
+          "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+        }
+      }
+    }
+  }
+}
